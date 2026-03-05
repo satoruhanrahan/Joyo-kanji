@@ -93,13 +93,14 @@ header::before {
   color: var(--stone); padding: 0.45rem 2rem;
   background: rgba(255,255,255,0.3); border-bottom: 1px solid var(--mist);
 }
-.grid-wrap { display: flex; }
+.grid-wrap { display: flex; overflow: hidden; }
 #kanji-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
   gap: 1px; background: var(--mist);
   flex: 1; align-content: start;
   height: calc(100vh - 170px); overflow-y: auto;
+  min-width: 200px;
 }
 .kanji-cell {
   background: var(--paper); aspect-ratio: 1;
@@ -113,11 +114,32 @@ header::before {
 .kanji-cell.selected .kanji-meaning { color: var(--gold-light); }
 .kanji-char { font-family: 'Noto Serif JP', serif; font-size: 1.75rem; font-weight: 400; line-height: 1; color: var(--ink); }
 .kanji-meaning { font-size: 0.48rem; color: var(--stone); text-align: center; line-height: 1.2; margin-top: 2px; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Space Mono', monospace; }
+#divider {
+  width: 6px; flex-shrink: 0;
+  height: calc(100vh - 170px);
+  background: var(--mist);
+  cursor: col-resize;
+  position: relative;
+  transition: background 0.15s;
+  user-select: none;
+}
+#divider:hover, #divider.dragging { background: var(--gold); }
+#divider::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px; height: 32px;
+  border-left: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  opacity: 0.4;
+}
 #detail-panel {
   width: 360px; flex-shrink: 0;
-  border-left: 1px solid var(--mist); padding: 2rem 1.75rem;
+  padding: 2rem 1.75rem;
   height: calc(100vh - 170px); overflow-y: auto;
   background: var(--paper);
+  min-width: 240px;
 }
 .detail-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -225,6 +247,7 @@ header::before {
 
 <div class="grid-wrap">
   <div id="kanji-grid"></div>
+  <div id="divider"></div>
   <div id="detail-panel">
     <div class="detail-empty">
       <div class="big-char">字</div>
@@ -464,6 +487,72 @@ function toRomaji(str) {
 
 // Init
 renderGrid(filteredData);
+
+// Resizable divider
+(function() {
+  const divider = document.getElementById('divider');
+  const panel   = document.getElementById('detail-panel');
+  const wrap    = divider.closest('.grid-wrap');
+  let dragging  = false;
+  let startX, startWidth;
+
+  divider.addEventListener('mousedown', e => {
+    dragging  = true;
+    startX    = e.clientX;
+    startWidth = panel.offsetWidth;
+    divider.classList.add('dragging');
+    document.body.style.cursor    = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta   = startX - e.clientX;          // drag left = wider panel
+    const wrapW   = wrap.offsetWidth;
+    const minPanel = parseInt(getComputedStyle(panel).minWidth) || 240;
+    const minGrid  = 200;
+    const newWidth = Math.min(
+      Math.max(startWidth + delta, minPanel),
+      wrapW - minGrid - divider.offsetWidth
+    );
+    panel.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    divider.classList.remove('dragging');
+    document.body.style.cursor     = '';
+    document.body.style.userSelect = '';
+  });
+
+  // Touch support
+  divider.addEventListener('touchstart', e => {
+    dragging   = true;
+    startX     = e.touches[0].clientX;
+    startWidth = panel.offsetWidth;
+    divider.classList.add('dragging');
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const delta    = startX - e.touches[0].clientX;
+    const wrapW    = wrap.offsetWidth;
+    const minPanel = parseInt(getComputedStyle(panel).minWidth) || 240;
+    const newWidth = Math.min(
+      Math.max(startWidth + delta, minPanel),
+      wrapW - 200 - divider.offsetWidth
+    );
+    panel.style.width = newWidth + 'px';
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    dragging = false;
+    divider.classList.remove('dragging');
+  });
+})();
 </script>
 </body>
 </html>
