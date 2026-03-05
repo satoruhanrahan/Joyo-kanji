@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常用漢字 — Jōyō Kanji Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Noto+Sans+JP:wght@300;400;500&family=IM+Fell+English:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --paper-dark: #ece5d4;
+    --vermillion: #c0392b;
+    --gold: #b8860b;
+    --gold-light: #d4a017;
+    --stone: #8c7b6b;
+    --mist: #d4ccbc;
+    --seal-red: #8b1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(192,57,43,0.03) 0%, transparent 50%);
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--mist);
+    padding: 2rem 3rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '漢';
+    position: absolute;
+    right: -1rem;
+    top: -2rem;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14rem;
+    font-weight: 700;
+    color: rgba(184,134,11,0.05);
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .header-title h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .header-title .subtitle {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--stone);
+    margin-top: 0.4rem;
+    letter-spacing: 0.03em;
+  }
+
+  .header-meta {
+    margin-left: auto;
+    text-align: right;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--stone);
+    line-height: 1.8;
+  }
+
+  .header-meta .count {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+    line-height: 1;
+  }
+
+  /* Search bar */
+  .search-bar {
+    padding: 1.5rem 3rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid var(--mist);
+    background: rgba(255,255,255,0.3);
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 500px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--stone);
+    font-size: 0.9rem;
+  }
+
+  #search {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.8rem;
+    border: 1px solid var(--mist);
+    border-radius: 2px;
+    background: rgba(255,255,255,0.7);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #search:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,134,11,0.1);
+  }
+
+  .filter-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--mist);
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--stone);
+  }
+
+  .pill:hover, .pill.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* Grid */
+  .grid-wrap {
+    display: flex;
+    gap: 0;
+  }
+
+  #kanji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 1px;
+    background: var(--mist);
+    flex: 1;
+    padding: 0;
+    align-content: start;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+  }
+
+  .kanji-cell {
+    background: var(--paper);
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+    padding: 4px;
+  }
+
+  .kanji-cell:hover {
+    background: var(--paper-dark);
+    z-index: 1;
+  }
+
+  .kanji-cell.selected {
+    background: var(--ink);
+  }
+
+  .kanji-cell.selected .kanji-char {
+    color: var(--paper);
+  }
+
+  .kanji-cell.selected .kanji-meaning {
+    color: var(--gold-light);
+  }
+
+  .kanji-char {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .kanji-meaning {
+    font-size: 0.5rem;
+    color: var(--stone);
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 2px;
+    max-width: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Detail panel */
+  #detail-panel {
+    width: 380px;
+    min-height: calc(100vh - 180px);
+    border-left: 1px solid var(--mist);
+    padding: 2.5rem 2rem;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 180px);
+    background: var(--paper);
+    transition: opacity 0.3s;
+  }
+
+  .detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60%;
+    color: var(--mist);
+    font-family: 'Noto Serif JP', serif;
+    text-align: center;
+  }
+
+  .detail-empty .big-char {
+    font-size: 6rem;
+    opacity: 0.3;
+    line-height: 1;
+  }
+
+  .detail-empty p {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    opacity: 0.5;
+  }
+
+  /* Detail content */
+  .detail-hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--mist);
+  }
+
+  .detail-kanji-big {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 5.5rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink);
+    flex-shrink: 0;
+    border: 1px solid var(--mist);
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    position: relative;
+  }
+
+  .detail-kanji-big::before,
+  .detail-kanji-big::after {
+    content: '';
+    position: absolute;
+    background: var(--mist);
+  }
+
+  .detail-kanji-big::before {
+    width: 1px;
+    height: 100%;
+    left: 50%;
+    opacity: 0.4;
+  }
+
+  .detail-kanji-big::after {
+    height: 1px;
+    width: 100%;
+    top: 50%;
+    opacity: 0.4;
+  }
+
+  .detail-meta {
+    flex: 1;
+  }
+
+  .detail-meanings {
+    font-family: 'IM Fell English', serif;
+    font-size: 1.3rem;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail-badges {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid;
+    border-radius: 2px;
+  }
+
+  .badge-grade { border-color: var(--gold); color: var(--gold); }
+  .badge-strokes { border-color: var(--stone); color: var(--stone); }
+  .badge-jlpt { border-color: var(--vermillion); color: var(--vermillion); }
+
+  /* Readings section */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--stone);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--mist);
+  }
+
+  .section {
+    margin-bottom: 1.8rem;
+  }
+
+  .readings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .reading-block {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--mist);
+    padding: 0.75rem;
+  }
+
+  .reading-type {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+
+  .reading-kana {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .reading-romaji {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--stone);
+  }
+
+  /* Radical */
+  .radical-display {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--mist);
+    padding: 1rem;
+  }
+
+  .radical-char {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--vermillion);
+    line-height: 1;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .radical-info {
+    flex: 1;
+  }
+
+  .radical-name {
+    font-family: 'IM Fell English', serif;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+
+  .radical-meaning {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--stone);
+    margin-top: 0.2rem;
+  }
+
+  /* Ancient forms */
+  .ancient-forms {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .ancient-form {
+    border: 1px solid var(--mist);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    background: rgba(255,255,255,0.6);
+    transition: border-color 0.2s;
+  }
+
+  .ancient-form:hover {
+    border-color: var(--gold);
+  }
+
+  .ancient-form-char {
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin-bottom: 0.3rem;
+    min-height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ancient-form-char img {
+    max-height: 2.2rem;
+    max-width: 2.2rem;
+    object-fit: contain;
+  }
+
+  .ancient-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ancient-label-jp {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--stone);
+    margin-top: 1px;
+  }
+
+  /* Example words */
+  .words-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .word-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--mist);
+  }
+
+  .word-kanji {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    min-width: 60px;
+  }
+
+  .word-reading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.8rem;
+    color: var(--stone);
+    min-width: 70px;
+  }
+
+  .word-meaning {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--stone);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--paper); }
+  ::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--stone); }
+
+  /* Red seal decoration */
+  .seal {
+    display: inline-block;
+    background: var(--seal-red);
+    color: white;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .grade-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .grade-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .grade-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mist);
+  }
+
+  .grade-dot.filled { background: var(--gold); }
+
+  /* Wikidata link */
+  .external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--stone);
+    text-decoration: none;
+    border: 1px solid var(--mist);
+    padding: 0.4rem 0.75rem;
+    margin-top: 0.5rem;
+    transition: all 0.15s;
+  }
+
+  .external-link:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-content {
+    animation: fadeIn 0.25s ease;
+  }
+
+  .results-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--stone);
+    padding: 0.5rem 3rem;
+    background: rgba(255,255,255,0.3);
+    border-bottom: 1px solid var(--mist);
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <h1>常用漢字</h1>
+    <div class="subtitle">Jōyō Kanji — The Essential Characters of Modern Japanese</div>
+  </div>
+  <div class="header-meta">
+    <span class="count">2,136</span>
+    characters designated by the<br>
+    Ministry of Education, 2010
+  </div>
+</header>
+
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Search by kanji, meaning, or reading…" autocomplete="off">
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" data-filter="all">All</button>
+    <button class="pill" data-filter="1">Grade 1</button>
+    <button class="pill" data-filter="2">Grade 2</button>
+    <button class="pill" data-filter="3">Grade 3</button>
+    <button class="pill" data-filter="4">Grade 4</button>
+    <button class="pill" data-filter="5">Grade 5</button>
+    <button class="pill" data-filter="6">Grade 6</button>
+    <button class="pill" data-filter="S">Secondary</button>
+  </div>
+</div>
+
+<div class="results-count" id="results-count">Showing all 2,136 characters</div>
+
+<div class="grid-wrap">
+  <div id="kanji-grid"></div>
+  <div id="detail-panel">
+    <div class="detail-empty">
+      <div class="big-char">字</div>
+      <p>Select a character to explore its history,<br>readings, and ancient forms</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Representative sample of Joyo kanji with rich data
+// In a full implementation, this would be loaded from KANJIDIC2 / KanjiVG
+const kanjiData = [
+  {
+    kanji: '山', meanings: ['mountain'], on: ['サン', 'セン'], kun: ['やま'], romaji_on: ['san', 'sen'], romaji_kun: ['yama'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '山', radical_meaning: 'mountain', radical_name: 'yama',
+    ancient: { oracle: '𠙸', bronze: '山', seal: '山' },
+    words: [{ k: '火山', r: 'かざん', m: 'volcano' }, { k: '山脈', r: 'さんみゃく', m: 'mountain range' }, { k: '登山', r: 'とざん', m: 'mountain climbing' }],
+    etymology: 'Pictograph of three mountain peaks. The three strokes represent peaks rising from the earth.'
+  },
+  {
+    kanji: '川', meanings: ['river', 'stream'], on: ['セン'], kun: ['かわ'], romaji_on: ['sen'], romaji_kun: ['kawa'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '川', radical_meaning: 'river', radical_name: 'kawa',
+    ancient: { oracle: '𠂣', bronze: '川', seal: '川' },
+    words: [{ k: '川岸', r: 'かわぎし', m: 'riverbank' }, { k: '河川', r: 'かせん', m: 'rivers' }, { k: '小川', r: 'おがわ', m: 'brook, stream' }],
+    etymology: 'Pictograph of flowing water between two banks. The three vertical strokes represent currents flowing downstream.'
+  },
+  {
+    kanji: '日', meanings: ['sun', 'day'], on: ['ニチ', 'ジツ'], kun: ['ひ', 'か'], romaji_on: ['nichi', 'jitsu'], romaji_kun: ['hi', 'ka'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '日', radical_meaning: 'sun', radical_name: 'hi',
+    ancient: { oracle: '☉', bronze: '日', seal: '日' },
+    words: [{ k: '日本', r: 'にほん', m: 'Japan' }, { k: '毎日', r: 'まいにち', m: 'every day' }, { k: '日曜日', r: 'にちようび', m: 'Sunday' }],
+    etymology: 'Originally a circle with a dot inside, representing the sun. Over time it became rectangular in Chinese calligraphy.'
+  },
+  {
+    kanji: '月', meanings: ['moon', 'month'], on: ['ゲツ', 'ガツ'], kun: ['つき'], romaji_on: ['getsu', 'gatsu'], romaji_kun: ['tsuki'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '月', radical_meaning: 'moon', radical_name: 'tsuki',
+    ancient: { oracle: '𠄌', bronze: '月', seal: '月' },
+    words: [{ k: '月曜日', r: 'げつようび', m: 'Monday' }, { k: '三ヶ月', r: 'さんかげつ', m: 'three months' }, { k: '満月', r: 'まんげつ', m: 'full moon' }],
+    etymology: 'Pictograph of a crescent moon. The two internal strokes represent the shadowed portion of the lunar surface.'
+  },
+  {
+    kanji: '木', meanings: ['tree', 'wood'], on: ['モク', 'ボク'], kun: ['き', 'こ'], romaji_on: ['moku', 'boku'], romaji_kun: ['ki', 'ko'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '木', radical_meaning: 'tree', radical_name: 'ki',
+    ancient: { oracle: '𣎹', bronze: '木', seal: '木' },
+    words: [{ k: '木曜日', r: 'もくようび', m: 'Thursday' }, { k: '木材', r: 'もくざい', m: 'lumber, timber' }, { k: '植木', r: 'うえき', m: 'garden plant' }],
+    etymology: 'Pictograph of a tree with roots (bottom strokes) and branches (top strokes). The cross shape represents trunk, roots, and boughs.'
+  },
+  {
+    kanji: '火', meanings: ['fire'], on: ['カ'], kun: ['ひ', 'ほ'], romaji_on: ['ka'], romaji_kun: ['hi', 'ho'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '火', radical_meaning: 'fire', radical_name: 'hi',
+    ancient: { oracle: '🔥', bronze: '火', seal: '火' },
+    words: [{ k: '火曜日', r: 'かようび', m: 'Tuesday' }, { k: '花火', r: 'はなび', m: 'fireworks' }, { k: '火山', r: 'かざん', m: 'volcano' }],
+    etymology: 'Pictograph of flames rising upward. The two side strokes represent sparks flying from a central flame.'
+  },
+  {
+    kanji: '水', meanings: ['water'], on: ['スイ'], kun: ['みず'], romaji_on: ['sui'], romaji_kun: ['mizu'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '水', radical_meaning: 'water', radical_name: 'mizu',
+    ancient: { oracle: '𠀧', bronze: '水', seal: '水' },
+    words: [{ k: '水曜日', r: 'すいようび', m: 'Wednesday' }, { k: '水泳', r: 'すいえい', m: 'swimming' }, { k: '洪水', r: 'こうずい', m: 'flood' }],
+    etymology: 'Pictograph of a stream of water with currents flowing around a central line. Related to the river radical 川.'
+  },
+  {
+    kanji: '土', meanings: ['earth', 'soil', 'ground'], on: ['ド', 'ト'], kun: ['つち'], romaji_on: ['do', 'to'], romaji_kun: ['tsuchi'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '土', radical_meaning: 'earth', radical_name: 'tsuchi',
+    ancient: { oracle: '⊥', bronze: '土', seal: '土' },
+    words: [{ k: '土曜日', r: 'どようび', m: 'Saturday' }, { k: '土地', r: 'とち', m: 'land, ground' }, { k: '粘土', r: 'ねんど', m: 'clay' }],
+    etymology: 'Pictograph of a mound of earth on ground level. The horizontal base represents the ground, the vertical stroke a mound.'
+  },
+  {
+    kanji: '人', meanings: ['person', 'human'], on: ['ジン', 'ニン'], kun: ['ひと'], romaji_on: ['jin', 'nin'], romaji_kun: ['hito'],
+    grade: 1, strokes: 2, jlpt: 5, radical: '人', radical_meaning: 'person', radical_name: 'hito',
+    ancient: { oracle: '亻', bronze: '人', seal: '人' },
+    words: [{ k: '日本人', r: 'にほんじん', m: 'Japanese person' }, { k: '人口', r: 'じんこう', m: 'population' }, { k: '人生', r: 'じんせい', m: 'life, human life' }],
+    etymology: 'Pictograph of a person standing in profile, arms slightly extended. One of the most fundamental characters in the writing system.'
+  },
+  {
+    kanji: '大', meanings: ['big', 'large', 'great'], on: ['ダイ', 'タイ'], kun: ['おお'], romaji_on: ['dai', 'tai'], romaji_kun: ['oo'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '大', radical_meaning: 'big', radical_name: 'dai',
+    ancient: { oracle: '大', bronze: '大', seal: '大' },
+    words: [{ k: '大学', r: 'だいがく', m: 'university' }, { k: '大切', r: 'たいせつ', m: 'important' }, { k: '大人', r: 'おとな', m: 'adult' }],
+    etymology: 'Pictograph of a person (人) with arms spread wide — representing something large or great in size.'
+  },
+  {
+    kanji: '小', meanings: ['small', 'little'], on: ['ショウ'], kun: ['ちい', 'こ', 'お'], romaji_on: ['shō'], romaji_kun: ['chii', 'ko', 'o'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '小', radical_meaning: 'small', radical_name: 'shō',
+    ancient: { oracle: '∴', bronze: '小', seal: '小' },
+    words: [{ k: '小学校', r: 'しょうがっこう', m: 'elementary school' }, { k: '小説', r: 'しょうせつ', m: 'novel' }, { k: '小さい', r: 'ちいさい', m: 'small, little' }],
+    etymology: 'Three dots or small marks representing something tiny. Contrast with 大 (large).'
+  },
+  {
+    kanji: '中', meanings: ['middle', 'inside', 'China'], on: ['チュウ'], kun: ['なか'], romaji_on: ['chū'], romaji_kun: ['naka'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '｜', radical_meaning: 'line', radical_name: 'bō',
+    ancient: { oracle: '中', bronze: '中', seal: '中' },
+    words: [{ k: '中国', r: 'ちゅうごく', m: 'China' }, { k: '中学校', r: 'ちゅうがっこう', m: 'middle school' }, { k: '中心', r: 'ちゅうしん', m: 'center, core' }],
+    etymology: 'A vertical line through the center of a rectangle, representing something in the middle or inside.'
+  },
+  {
+    kanji: '口', meanings: ['mouth', 'opening'], on: ['コウ', 'ク'], kun: ['くち'], romaji_on: ['kō', 'ku'], romaji_kun: ['kuchi'],
+    grade: 1, strokes: 3, jlpt: 5, radical: '口', radical_meaning: 'mouth', radical_name: 'kuchi',
+    ancient: { oracle: '□', bronze: '口', seal: '口' },
+    words: [{ k: '口座', r: 'こうざ', m: 'bank account' }, { k: '入口', r: 'いりぐち', m: 'entrance' }, { k: '人口', r: 'じんこう', m: 'population' }],
+    etymology: 'Simple pictograph of an open mouth. Used as a radical in hundreds of characters related to speech and eating.'
+  },
+  {
+    kanji: '目', meanings: ['eye', 'look'], on: ['モク', 'ボク'], kun: ['め', 'ま'], romaji_on: ['moku', 'boku'], romaji_kun: ['me', 'ma'],
+    grade: 1, strokes: 5, jlpt: 5, radical: '目', radical_meaning: 'eye', radical_name: 'me',
+    ancient: { oracle: '👁', bronze: '目', seal: '目' },
+    words: [{ k: '目的', r: 'もくてき', m: 'purpose, goal' }, { k: '注目', r: 'ちゅうもく', m: 'attention' }, { k: '目標', r: 'もくひょう', m: 'target, goal' }],
+    etymology: 'Originally an oval shape representing an eye with iris. Rotated 90° in modern form; the internal lines represent the pupil and iris.'
+  },
+  {
+    kanji: '耳', meanings: ['ear'], on: ['ジ'], kun: ['みみ'], romaji_on: ['ji'], romaji_kun: ['mimi'],
+    grade: 1, strokes: 6, jlpt: 4, radical: '耳', radical_meaning: 'ear', radical_name: 'mimi',
+    ancient: { oracle: '耳', bronze: '耳', seal: '耳' },
+    words: [{ k: '耳鼻科', r: 'じびか', m: 'ENT department' }, { k: '耳鳴り', r: 'みみなり', m: 'tinnitus' }, { k: '初耳', r: 'はつみみ', m: 'first hearing' }],
+    etymology: 'Pictograph of a human ear showing the outer ear structure with the ear canal.'
+  },
+  {
+    kanji: '手', meanings: ['hand'], on: ['シュ'], kun: ['て', 'た'], romaji_on: ['shu'], romaji_kun: ['te', 'ta'],
+    grade: 1, strokes: 4, jlpt: 5, radical: '手', radical_meaning: 'hand', radical_name: 'te',
+    ancient: { oracle: '✋', bronze: '手', seal: '手' },
+    words: [{ k: '手紙', r: 'てがみ', m: 'letter' }, { k: '握手', r: 'あくしゅ', m: 'handshake' }, { k: '手術', r: 'しゅじゅつ', m: 'surgery' }],
+    etymology: 'Pictograph of an outstretched hand with five fingers. The horizontal strokes represent the fingers and palm.'
+  },
+  {
+    kanji: '足', meanings: ['foot', 'leg', 'sufficient'], on: ['ソク'], kun: ['あし', 'た'], romaji_on: ['soku'], romaji_kun: ['ashi', 'ta'],
+    grade: 1, strokes: 7, jlpt: 4, radical: '足', radical_meaning: 'foot', radical_name: 'ashi',
+    ancient: { oracle: '足', bronze: '足', seal: '足' },
+    words: [{ k: '足りる', r: 'たりる', m: 'to be sufficient' }, { k: '遠足', r: 'えんそく', m: 'excursion' }, { k: '土足', r: 'どそく', m: 'shoes on' }],
+    etymology: 'Combination of 口 (knee joint) and 止 (foot/toe), depicting a leg from knee to foot.'
+  },
+  {
+    kanji: '心', meanings: ['heart', 'mind', 'spirit'], on: ['シン'], kun: ['こころ'], romaji_on: ['shin'], romaji_kun: ['kokoro'],
+    grade: 2, strokes: 4, jlpt: 3, radical: '心', radical_meaning: 'heart', radical_name: 'kokoro',
+    ancient: { oracle: '♡', bronze: '心', seal: '心' },
+    words: [{ k: '心配', r: 'しんぱい', m: 'worry, concern' }, { k: '中心', r: 'ちゅうしん', m: 'center' }, { k: '心理', r: 'しんり', m: 'psychology' }],
+    etymology: 'Pictograph of the human heart, showing the chambers and aorta. One of the most used radicals in emotional/mental characters.'
+  },
+  {
+    kanji: '国', meanings: ['country', 'nation'], on: ['コク'], kun: ['くに'], romaji_on: ['koku'], romaji_kun: ['kuni'],
+    grade: 2, strokes: 8, jlpt: 5, radical: '囗', radical_meaning: 'enclosure', radical_name: 'kunigamae',
+    ancient: { oracle: '國', bronze: '国', seal: '国' },
+    words: [{ k: '国際', r: 'こくさい', m: 'international' }, { k: '外国', r: 'がいこく', m: 'foreign country' }, { k: '国民', r: 'こくみん', m: 'nationals, citizens' }],
+    etymology: 'The outer square 囗 represents a border, with 玉 (jewel/king) inside — a kingdom defined by its boundaries and ruler.'
+  },
+  {
+    kanji: '語', meanings: ['language', 'word', 'speak'], on: ['ゴ'], kun: ['かた'], romaji_on: ['go'], romaji_kun: ['kata'],
+    grade: 2, strokes: 14, jlpt: 5, radical: '言', radical_meaning: 'speech', radical_name: 'gen',
+    ancient: { oracle: '語', bronze: '語', seal: '語' },
+    words: [{ k: '日本語', r: 'にほんご', m: 'Japanese language' }, { k: '英語', r: 'えいご', m: 'English language' }, { k: '物語', r: 'ものがたり', m: 'story, tale' }],
+    etymology: 'Combines 言 (speech/words) with 吾 (I, myself) as phonetic component — words that identify oneself or one\'s group.'
+  },
+  {
+    kanji: '花', meanings: ['flower', 'blossom'], on: ['カ', 'ケ'], kun: ['はな'], romaji_on: ['ka', 'ke'], romaji_kun: ['hana'],
+    grade: 1, strokes: 7, jlpt: 5, radical: '艸', radical_meaning: 'grass/plant', radical_name: 'kusa',
+    ancient: { oracle: '花', bronze: '花', seal: '花' },
+    words: [{ k: '花見', r: 'はなみ', m: 'cherry blossom viewing' }, { k: '花火', r: 'はなび', m: 'fireworks' }, { k: '生花', r: 'せいか', m: 'fresh flowers' }],
+    etymology: 'Plant radical 艸 on top of 化 (change/transform) — flowers as the transformative blooming of a plant.'
+  },
+  {
+    kanji: '学', meanings: ['study', 'learning', 'school'], on: ['ガク'], kun: ['まな'], romaji_on: ['gaku'], romaji_kun: ['mana'],
+    grade: 1, strokes: 8, jlpt: 5, radical: '子', radical_meaning: 'child', radical_name: 'ko',
+    ancient: { oracle: '學', bronze: '学', seal: '学' },
+    words: [{ k: '大学', r: 'だいがく', m: 'university' }, { k: '学校', r: 'がっこう', m: 'school' }, { k: '科学', r: 'かがく', m: 'science' }],
+    etymology: 'Simplified from 學: shows hands (⺮) guiding a child (子) in a building (冖) — guided learning by an elder.'
+  },
+  {
+    kanji: '生', meanings: ['life', 'birth', 'grow', 'raw'], on: ['セイ', 'ショウ'], kun: ['い', 'う', 'お', 'は', 'なま'], romaji_on: ['sei', 'shō'], romaji_kun: ['i', 'u', 'o', 'ha', 'nama'],
+    grade: 1, strokes: 5, jlpt: 5, radical: '生', radical_meaning: 'life', radical_name: 'umareru',
+    ancient: { oracle: '生', bronze: '生', seal: '生' },
+    words: [{ k: '先生', r: 'せんせい', m: 'teacher' }, { k: '学生', r: 'がくせい', m: 'student' }, { k: '誕生日', r: 'たんじょうび', m: 'birthday' }],
+    etymology: 'Pictograph of a sprouting plant pushing through the soil — representing birth, growth, and life itself.'
+  },
+  {
+    kanji: '年', meanings: ['year'], on: ['ネン'], kun: ['とし'], romaji_on: ['nen'], romaji_kun: ['toshi'],
+    grade: 1, strokes: 6, jlpt: 5, radical: '干', radical_meaning: 'dry', radical_name: 'kan',
+    ancient: { oracle: '秊', bronze: '年', seal: '年' },
+    words: [{ k: '来年', r: 'らいねん', m: 'next year' }, { k: '今年', r: 'ことし', m: 'this year' }, { k: '年齢', r: 'ねんれい', m: 'age' }],
+    etymology: 'Originally showed a person carrying a bundle of grain — representing the yearly harvest cycle and the passage of a year.'
+  },
+  {
+    kanji: '何', meanings: ['what', 'how many'], on: ['カ'], kun: ['なに', 'なん'], romaji_on: ['ka'], romaji_kun: ['nani', 'nan'],
+    grade: 2, strokes: 7, jlpt: 5, radical: '人', radical_meaning: 'person', radical_name: 'hito',
+    ancient: { oracle: '何', bronze: '何', seal: '何' },
+    words: [{ k: '何度', r: 'なんど', m: 'how many times' }, { k: '何故', r: 'なぜ', m: 'why' }, { k: '幾何学', r: 'きかがく', m: 'geometry' }],
+    etymology: 'Person 亻 carrying something on their shoulder 可 — asking "what is this person carrying?" The quintessential interrogative.'
+  },
+  {
+    kanji: '時', meanings: ['time', 'hour', 'moment'], on: ['ジ'], kun: ['とき'], romaji_on: ['ji'], romaji_kun: ['toki'],
+    grade: 2, strokes: 10, jlpt: 5, radical: '日', radical_meaning: 'sun', radical_name: 'hi',
+    ancient: { oracle: '時', bronze: '時', seal: '時' },
+    words: [{ k: '時間', r: 'じかん', m: 'time, hour' }, { k: '時計', r: 'とけい', m: 'clock, watch' }, { k: '同時', r: 'どうじ', m: 'simultaneous' }],
+    etymology: 'Combines 日 (sun) with 寺 (temple, which also served as phonetic) — the sun\'s position marking the time of day.'
+  },
+  {
+    kanji: '書', meanings: ['write', 'book', 'document'], on: ['ショ'], kun: ['か'], romaji_on: ['sho'], romaji_kun: ['ka'],
+    grade: 2, strokes: 10, jlpt: 4, radical: '曰', radical_meaning: 'say', radical_name: 'etsui',
+    ancient: { oracle: '書', bronze: '書', seal: '書' },
+    words: [{ k: '図書館', r: 'としょかん', m: 'library' }, { k: '教科書', r: 'きょうかしょ', m: 'textbook' }, { k: '書道', r: 'しょどう', m: 'calligraphy' }],
+    etymology: 'Brush 聿 writing over 曰 (words/speech) — the act of recording spoken words in written form.'
+  },
+  {
+    kanji: '道', meanings: ['road', 'way', 'path', 'doctrine'], on: ['ドウ', 'トウ'], kun: ['みち'], romaji_on: ['dō', 'tō'], romaji_kun: ['michi'],
+    grade: 2, strokes: 12, jlpt: 4, radical: '辵', radical_meaning: 'walk', radical_name: 'shinnyō',
+    ancient: { oracle: '道', bronze: '道', seal: '道' },
+    words: [{ k: '道路', r: 'どうろ', m: 'road, highway' }, { k: '柔道', r: 'じゅうどう', m: 'judo' }, { k: '神道', r: 'しんとう', m: 'Shinto' }],
+    etymology: 'The movement radical 辵 with 首 (head/leader) — the path a leader takes, extended to mean any way or doctrine.'
+  },
+  {
+    kanji: '東', meanings: ['east'], on: ['トウ'], kun: ['ひがし'], romaji_on: ['tō'], romaji_kun: ['higashi'],
+    grade: 2, strokes: 8, jlpt: 5, radical: '木', radical_meaning: 'tree', radical_name: 'ki',
+    ancient: { oracle: '東', bronze: '東', seal: '東' },
+    words: [{ k: '東京', r: 'とうきょう', m: 'Tokyo' }, { k: '東洋', r: 'とうよう', m: 'the Orient, East' }, { k: '中東', r: 'ちゅうとう', m: 'Middle East' }],
+    etymology: 'The sun (日) rising through/behind a tree (木) — the direction from which the sun rises each morning.'
+  },
+  {
+    kanji: '西', meanings: ['west'], on: ['セイ', 'サイ'], kun: ['にし'], romaji_on: ['sei', 'sai'], romaji_kun: ['nishi'],
+    grade: 2, strokes: 6, jlpt: 5, radical: '西', radical_meaning: 'west', radical_name: 'nishi',
+    ancient: { oracle: '西', bronze: '西', seal: '西' },
+    words: [{ k: '西洋', r: 'せいよう', m: 'the West' }, { k: '関西', r: 'かんさい', m: 'Kansai region' }, { k: '西暦', r: 'せいれき', m: 'Western calendar, AD' }],
+    etymology: 'Pictograph of a bird settling into a nest at sunset — the direction the sun sets, where birds return to roost.'
+  },
+  {
+    kanji: '金', meanings: ['gold', 'metal', 'money', 'Friday'], on: ['キン', 'コン'], kun: ['かね', 'かな'], romaji_on: ['kin', 'kon'], romaji_kun: ['kane', 'kana'],
+    grade: 1, strokes: 8, jlpt: 5, radical: '金', radical_meaning: 'metal', radical_name: 'kane',
+    ancient: { oracle: '金', bronze: '金', seal: '金' },
+    words: [{ k: '金曜日', r: 'きんようび', m: 'Friday' }, { k: '金融', r: 'きんゆう', m: 'finance' }, { k: '現金', r: 'げんきん', m: 'cash' }],
+    etymology: 'Shows earth (土) with dots representing buried ore and a cover — metal hidden within the earth, waiting to be mined.'
+  },
+];
+
+let filteredData = [...kanjiData];
+let activeFilter = 'all';
+let selectedKanji = null;
+
+function renderGrid(data) {
+  const grid = document.getElementById('kanji-grid');
+  grid.innerHTML = '';
+  document.getElementById('results-count').textContent =
+    `Showing ${data.length.toLocaleString()} of 2,136 characters (${data.length} with full data loaded)`;
+
+  data.forEach(k => {
+    const cell = document.createElement('div');
+    cell.className = 'kanji-cell' + (selectedKanji?.kanji === k.kanji ? ' selected' : '');
+    cell.innerHTML = `<span class="kanji-char">${k.kanji}</span><span class="kanji-meaning">${k.meanings[0]}</span>`;
+    cell.addEventListener('click', () => selectKanji(k));
+    grid.appendChild(cell);
+  });
+}
+
+function selectKanji(k) {
+  selectedKanji = k;
+  renderGrid(filteredData);
+
+  const panel = document.getElementById('detail-panel');
+  const gradeLabel = k.grade === 'S' ? 'Secondary' : `Grade ${k.grade}`;
+
+  const gradeDots = Array.from({length: 6}, (_, i) =>
+    `<span class="grade-dot ${(k.grade !== 'S' && i < k.grade) ? 'filled' : ''}"></span>`
+  ).join('');
+
+  panel.innerHTML = `<div class="detail-content">
+    <div class="detail-hero">
+      <div class="detail-kanji-big">${k.kanji}</div>
+      <div class="detail-meta">
+        <div class="detail-meanings">${k.meanings.join(', ')}</div>
+        <div class="detail-badges">
+          <span class="badge badge-grade">${gradeLabel}</span>
+          <span class="badge badge-strokes">${k.strokes} strokes</span>
+          ${k.jlpt ? `<span class="badge badge-jlpt">JLPT N${k.jlpt}</span>` : ''}
+        </div>
+        <div class="grade-indicator">
+          <div class="grade-dots">${gradeDots}</div>
+        </div>
+        <a class="external-link" href="https://jisho.org/search/${encodeURIComponent(k.kanji)}%23kanji" target="_blank">
+          ↗ View on Jisho
+        </a>
+        <a class="external-link" href="https://en.wiktionary.org/wiki/${encodeURIComponent(k.kanji)}" target="_blank" style="margin-left:0.4rem">
+          ↗ Wiktionary
+        </a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Readings</div>
+      <div class="readings-grid">
+        <div class="reading-block">
+          <div class="reading-type">On'yomi 音読み</div>
+          <div class="reading-kana">${k.on.join('・')}</div>
+          <div class="reading-romaji">${k.romaji_on.join(', ')}</div>
+        </div>
+        <div class="reading-block">
+          <div class="reading-type">Kun'yomi 訓読み</div>
+          <div class="reading-kana">${k.kun.join('・')}</div>
+          <div class="reading-romaji">${k.romaji_kun.join(', ')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Radical 部首</div>
+      <div class="radical-display">
+        <div class="radical-char">${k.radical}</div>
+        <div class="radical-info">
+          <div class="radical-name">${k.radical_name}</div>
+          <div class="radical-meaning">"${k.radical_meaning}"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Ancient Forms 古代文字</div>
+      <div class="ancient-forms">
+        <div class="ancient-form">
+          <div class="ancient-form-char" style="font-size:1.6rem">${k.ancient.oracle}</div>
+          <div class="ancient-label">Oracle Bone</div>
+          <div class="ancient-label-jp">甲骨文</div>
+        </div>
+        <div class="ancient-form">
+          <div class="ancient-form-char" style="font-size:1.6rem;font-family:'Noto Serif JP',serif">${k.ancient.bronze}</div>
+          <div class="ancient-label">Bronze Script</div>
+          <div class="ancient-label-jp">金文</div>
+        </div>
+        <div class="ancient-form">
+          <div class="ancient-form-char" style="font-size:1.6rem;font-family:'Noto Serif JP',serif">${k.ancient.seal}</div>
+          <div class="ancient-label">Seal Script</div>
+          <div class="ancient-label-jp">篆書</div>
+        </div>
+      </div>
+    </div>
+
+    ${k.etymology ? `<div class="section">
+      <div class="section-label">Etymology 字源</div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:0.9rem;color:var(--stone);line-height:1.7;padding:0.75rem;background:rgba(255,255,255,0.5);border:1px solid var(--mist)">
+        ${k.etymology}
+      </div>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="section-label">Example Words 例文</div>
+      <div class="words-list">
+        ${k.words.map(w => `<div class="word-item">
+          <span class="word-kanji">${w.k}</span>
+          <span class="word-reading">${w.r}</span>
+          <span class="word-meaning">${w.m}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// Search
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  filterAndRender(q, activeFilter);
+});
+
+// Filter pills
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    activeFilter = this.dataset.filter;
+    const q = document.getElementById('search').value.toLowerCase().trim();
+    filterAndRender(q, activeFilter);
+  });
+});
+
+function filterAndRender(q, grade) {
+  filteredData = kanjiData.filter(k => {
+    const matchGrade = grade === 'all' || String(k.grade) === grade;
+    const matchSearch = !q || k.kanji.includes(q) ||
+      k.meanings.some(m => m.toLowerCase().includes(q)) ||
+      k.on.some(r => r.includes(q)) ||
+      k.kun.some(r => r.includes(q)) ||
+      k.romaji_on.some(r => r.includes(q)) ||
+      k.romaji_kun.some(r => r.includes(q));
+    return matchGrade && matchSearch;
+  });
+  renderGrid(filteredData);
+}
+
+// Initial render
+renderGrid(filteredData);
+// Select first kanji by default
+selectKanji(kanjiData[0]);
+</script>
+</body>
+</html>
