@@ -188,6 +188,94 @@ header::before {
 .ancient-label { font-family: 'Space Mono', monospace; font-size: 0.52rem; color: var(--stone); text-transform: uppercase; letter-spacing: 0.06em; }
 .ancient-label-jp { font-family: 'Noto Sans JP', sans-serif; font-size: 0.6rem; color: var(--stone); margin-top: 1px; }
 .wiktionary-note { font-family: 'IM Fell English', serif; font-style: italic; font-size: 0.8rem; color: var(--stone); line-height: 1.6; padding: 0.65rem; background: rgba(255,255,255,0.5); border: 1px solid var(--mist); }
+
+/* Ancient forms dynamic display */
+.ancient-forms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+.ancient-form-card {
+  border: 1px solid var(--mist);
+  background: rgba(255,255,255,0.65);
+  padding: 0.6rem 0.4rem 0.5rem;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+.ancient-form-card:hover { border-color: var(--gold); box-shadow: 0 2px 8px rgba(184,134,11,0.1); }
+.ancient-form-card img {
+  width: 100%;
+  max-width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 0.35rem;
+  filter: sepia(20%) contrast(1.1);
+}
+.ancient-form-script {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  line-height: 1.3;
+}
+.ancient-form-script-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.58rem;
+  color: var(--stone);
+  margin-top: 1px;
+  opacity: 0.75;
+}
+.ancient-forms-loading {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: 'Space Mono', monospace; font-size: 0.65rem;
+  color: var(--stone); padding: 0.75rem 0;
+}
+.ancient-forms-loading::before {
+  content: '';
+  width: 10px; height: 10px;
+  border: 1.5px solid var(--mist);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ancient-forms-none {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--stone);
+  padding: 0.5rem 0;
+  opacity: 0.7;
+}
+.ancient-forms-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 0.5rem; flex-wrap: wrap; gap: 0.4rem;
+}
+.ancient-forms-source {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--stone);
+  opacity: 0.6;
+}
+.ancient-script-tag {
+  display: inline-block;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.48rem;
+  padding: 1px 5px;
+  border-radius: 1px;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tag-oracle { background: rgba(139,26,26,0.1); color: var(--seal-red); border: 1px solid rgba(139,26,26,0.2); }
+.tag-bronze { background: rgba(184,134,11,0.1); color: var(--gold); border: 1px solid rgba(184,134,11,0.2); }
+.tag-seal   { background: rgba(140,123,107,0.1); color: var(--stone); border: 1px solid rgba(140,123,107,0.2); }
+.tag-other  { background: rgba(26,18,8,0.06); color: var(--ink); border: 1px solid var(--mist); }
 .external-links { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .external-link {
   display: inline-flex; align-items: center; gap: 0.35rem;
@@ -495,16 +583,10 @@ function renderDetail(k, history) {
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="ancient-forms-section">
       <div class="section-label">Ancient Forms 古代文字</div>
-      <div class="wiktionary-note">
-        Historical forms (oracle bone 甲骨文, bronze script 金文, seal script 篆書) are documented
-        on Wiktionary for most Jōyō kanji. Click below to view them.
-      </div>
-      <div style="margin-top:0.6rem">
-        <a class="external-link" href="${wikiUrl}#Han_character" target="_blank">
-          ↗ View ancient forms on Wiktionary
-        </a>
+      <div id="ancient-forms-container">
+        <div class="ancient-forms-loading">Loading historical scripts…</div>
       </div>
     </div>
 
@@ -516,9 +598,12 @@ function renderDetail(k, history) {
       </div>
     </div>
   </div>`;
+  // After rendering, fetch ancient forms
+  fetchAncientForms(k.k, 'ancient-forms-container');
 }
 
-// Search
+// Init
+renderGrid(filteredData);
 document.getElementById('search').addEventListener('input', function() {
   searchQuery = this.value.trim();
   applyFilters();
@@ -645,8 +730,199 @@ function renderRadicalDetail(char, history) {
   </div>`;
 }
 
-// Init
-renderGrid(filteredData);
+// Ancient forms fetcher
+// Script type classification
+const SCRIPT_META = {
+  oracle:  { en: 'Oracle Bone', jp: '甲骨文', tag: 'tag-oracle' },
+  bronze:  { en: 'Bronze Script', jp: '金文',  tag: 'tag-bronze' },
+  seal:    { en: 'Seal Script',  jp: '篆書',  tag: 'tag-seal'   },
+  other:   { en: 'Old Script',   jp: '古文字', tag: 'tag-other'  },
+};
+
+function classifyScript(filename) {
+  const f = filename.toLowerCase();
+  if (f.includes('oracle') || f.includes('jiaguwen') || f.includes('jgw') || f.includes('甲骨')) return 'oracle';
+  if (f.includes('bronze') || f.includes('jinwen') || f.includes('jnw') || f.includes('金文')) return 'bronze';
+  if (f.includes('seal') || f.includes('zhuanshu') || f.includes('shuowen') || f.includes('篆') || f.includes('-sw') || f.includes('-ls')) return 'seal';
+  return 'other';
+}
+
+async function fetchAncientForms(kanji, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  try {
+    // Fetch Wiktionary page HTML via the REST API (returns sections)
+    const apiUrl = `https://en.wiktionary.org/api/rest_v1/page/html/${encodeURIComponent(kanji)}`;
+    const resp = await fetch(apiUrl, { headers: { 'Accept': 'text/html' } });
+    if (!resp.ok) throw new Error('not found');
+    const html = await resp.text();
+
+    // Parse the HTML to find images in the Han character / glyph origin section
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    // Collect all images that look like ancient script forms
+    const imgs = Array.from(doc.querySelectorAll('img'));
+    const formImgs = imgs.filter(img => {
+      const src = (img.getAttribute('src') || img.getAttribute('data-src') || '').toLowerCase();
+      const alt = (img.getAttribute('alt') || '').toLowerCase();
+      // Look for images in evolution/glyph/ancient form sections
+      return (
+        src.includes('oracle') || src.includes('bronze') || src.includes('seal') ||
+        src.includes('jinwen') || src.includes('jiaguwen') || src.includes('shuowen') ||
+        src.includes('zhuanshu') || src.includes('-jgw') || src.includes('-jnw') ||
+        src.includes('-sw.') || src.includes('-ls.') ||
+        alt.includes('oracle') || alt.includes('bronze') || alt.includes('seal') ||
+        // Wiktionary uses specific filename patterns for evolution charts
+        /u[0-9a-f]+-[a-z]/.test(src)
+      );
+    });
+
+    // Also search specifically in glyph origin / character evolution sections
+    // Wiktionary wraps these in specific figure captions
+    const figures = Array.from(doc.querySelectorAll('figure, .thumb, td img'));
+    const figImgs = figures.flatMap(fig => {
+      const img = fig.tagName === 'IMG' ? fig : fig.querySelector('img');
+      if (!img) return [];
+      const src = img.getAttribute('src') || '';
+      const caption = fig.textContent || '';
+      const isAncient =
+        /oracle|bronze|seal|jinwen|jiaguwen|shuowen|zhuanshu|甲骨|金文|篆/i.test(src + caption);
+      return isAncient ? [img] : [];
+    });
+
+    const allImgs = [...new Map([...formImgs, ...figImgs].map(i => [i.getAttribute('src'), i])).values()];
+
+    if (allImgs.length === 0) {
+      // Fallback: try the Wiktionary image API for known evolution image naming patterns
+      await fetchAncientFormsFallback(kanji, container);
+      return;
+    }
+
+    renderAncientForms(allImgs, kanji, container);
+
+  } catch (e) {
+    await fetchAncientFormsFallback(kanji, container);
+  }
+}
+
+async function fetchAncientFormsFallback(kanji, container) {
+  // Try Wikimedia Commons API: search for images related to this kanji's Unicode point
+  const cp = kanji.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+  const searchTerms = [
+    `${kanji} oracle bone script`,
+    `${kanji} bronze script`,
+    `U+${cp} glyph`,
+  ];
+
+  try {
+    const query = `${kanji} oracle bone bronze seal script Chinese character`;
+    const apiUrl = `https://en.wiktionary.org/w/api.php?action=query&titles=${encodeURIComponent(kanji)}&prop=images&format=json&origin=*`;
+    const resp = await fetch(apiUrl);
+    const data = await resp.json();
+    const pages = data.query?.pages || {};
+    const page = Object.values(pages)[0];
+    const images = page?.images || [];
+
+    const ancientImages = images.filter(img => {
+      const t = img.title.toLowerCase();
+      return t.includes('oracle') || t.includes('bronze') || t.includes('seal') ||
+             t.includes('jinwen') || t.includes('jiaguwen') || t.includes('shuowen') ||
+             t.includes('zhuanshu') || t.includes('-jgw') || t.includes('-jnw') ||
+             t.includes('-sw.') || t.includes('-ls.') || t.includes('glyph');
+    });
+
+    if (ancientImages.length === 0) {
+      showNoForms(kanji, container);
+      return;
+    }
+
+    // Fetch image URLs from Wikimedia
+    const titles = ancientImages.slice(0, 9).map(i => i.title).join('|');
+    const imgApiUrl = `https://en.wiktionary.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&format=json&origin=*`;
+    const imgResp = await fetch(imgApiUrl);
+    const imgData = await imgResp.json();
+    const imgPages = imgData.query?.pages || {};
+
+    const resolved = Object.values(imgPages)
+      .filter(p => p.imageinfo?.[0]?.url)
+      .map(p => ({
+        url: p.imageinfo[0].url,
+        title: p.title || '',
+      }));
+
+    if (resolved.length === 0) {
+      showNoForms(kanji, container);
+      return;
+    }
+
+    renderAncientFormsFromUrls(resolved, kanji, container);
+
+  } catch(e) {
+    showNoForms(kanji, container);
+  }
+}
+
+function renderAncientForms(imgs, kanji, container) {
+  const cards = imgs.slice(0, 9).map(img => {
+    let src = img.getAttribute('src') || '';
+    // Fix protocol-relative URLs
+    if (src.startsWith('//')) src = 'https:' + src;
+    // Upscale Wiktionary thumbnails (replace /thumb/ path and size)
+    src = src.replace(/\/thumb\//, '/').replace(/\/\d+px-[^\/]+$/, '');
+    const filename = src.split('/').pop() || '';
+    const script = classifyScript(filename);
+    const meta = SCRIPT_META[script];
+    return { src, meta };
+  }).filter(c => c.src);
+
+  if (cards.length === 0) { showNoForms(kanji, container); return; }
+
+  container.innerHTML = buildFormsHTML(cards, kanji);
+}
+
+function renderAncientFormsFromUrls(items, kanji, container) {
+  const cards = items.slice(0, 9).map(item => {
+    const script = classifyScript(item.title);
+    const meta = SCRIPT_META[script];
+    return { src: item.url, meta };
+  });
+  container.innerHTML = buildFormsHTML(cards, kanji);
+}
+
+function buildFormsHTML(cards, kanji) {
+  const wikiUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(kanji)}#Han_character`;
+  const grid = cards.map(c => `
+    <div class="ancient-form-card">
+      <img src="${c.src}" alt="${c.meta.en} form" loading="lazy"
+           onerror="this.closest('.ancient-form-card').style.display='none'">
+      <span class="ancient-script-tag ${c.meta.tag}">${c.meta.en}</span>
+      <div class="ancient-form-script-jp">${c.meta.jp}</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="ancient-forms-grid">${grid}</div>
+    <div class="ancient-forms-footer">
+      <span class="ancient-forms-source">Source: Wiktionary / Wikimedia Commons</span>
+      <a class="external-link" href="${wikiUrl}" target="_blank" style="font-size:0.58rem;padding:0.25rem 0.5rem;">↗ Full etymology</a>
+    </div>
+  `;
+}
+
+function showNoForms(kanji, container) {
+  const wikiUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(kanji)}#Han_character`;
+  container.innerHTML = `
+    <div class="ancient-forms-none">
+      Historical glyph images not found in database for this character.
+    </div>
+    <div class="ancient-forms-footer">
+      <a class="external-link" href="${wikiUrl}" target="_blank">↗ Check Wiktionary for etymology</a>
+    </div>
+  `;
+}
+
+
 
 // Resizable divider
 (function() {
