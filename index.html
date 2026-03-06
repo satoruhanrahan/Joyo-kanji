@@ -229,6 +229,15 @@ header::before {
   margin-top: 1px;
   opacity: 0.75;
 }
+.ancient-form-period {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.55rem;
+  color: var(--stone);
+  margin-top: 3px;
+  line-height: 1.3;
+  opacity: 0.7;
+}
 .ancient-forms-loading {
   display: flex; align-items: center; gap: 0.5rem;
   font-family: 'Space Mono', monospace; font-size: 0.65rem;
@@ -733,17 +742,23 @@ function renderRadicalDetail(char, history) {
 // Ancient forms fetcher
 // Script type classification
 const SCRIPT_META = {
-  oracle:  { en: 'Oracle Bone', jp: '甲骨文', tag: 'tag-oracle' },
-  bronze:  { en: 'Bronze Script', jp: '金文',  tag: 'tag-bronze' },
-  seal:    { en: 'Seal Script',  jp: '篆書',  tag: 'tag-seal'   },
-  other:   { en: 'Old Script',   jp: '古文字', tag: 'tag-other'  },
+  oracle:   { en: 'Oracle Bone',        jp: '甲骨文',  period: 'Shang dynasty, c. 1250–1050 BCE',           tag: 'tag-oracle' },
+  bronze:   { en: 'Bronze Script',      jp: '金文',    period: 'Zhou dynasty, c. 1050–221 BCE',              tag: 'tag-bronze' },
+  bigseal:  { en: 'Large Seal',         jp: '大篆',    period: 'W. Zhou – Spring & Autumn, c. 800–500 BCE',  tag: 'tag-seal'   },
+  shuowen:  { en: 'Shuowen Seal',       jp: '說文篆書', period: 'Han dynasty, compiled 100 CE',              tag: 'tag-seal'   },
+  seal:     { en: 'Seal Script',        jp: '篆書',    period: 'Qin–Han dynasty, c. 221 BCE–200 CE',         tag: 'tag-seal'   },
+  clerical: { en: 'Clerical Script',    jp: '隷書',    period: 'Han dynasty, c. 200 BCE–200 CE',             tag: 'tag-other'  },
+  other:    { en: 'Old Script',         jp: '古文字',  period: 'Ancient Chinese',                            tag: 'tag-other'  },
 };
 
 function classifyScript(filename) {
   const f = filename.toLowerCase();
-  if (f.includes('oracle') || f.includes('jiaguwen') || f.includes('jgw') || f.includes('甲骨')) return 'oracle';
-  if (f.includes('bronze') || f.includes('jinwen') || f.includes('jnw') || f.includes('金文')) return 'bronze';
-  if (f.includes('seal') || f.includes('zhuanshu') || f.includes('shuowen') || f.includes('篆') || f.includes('-sw') || f.includes('-ls')) return 'seal';
+  if (f.includes('oracle') || f.includes('jiaguwen') || f.includes('-jgw') || f.includes('甲骨')) return 'oracle';
+  if (f.includes('bronze') || f.includes('jinwen')   || f.includes('-jnw') || f.includes('金文')) return 'bronze';
+  if (f.includes('bigseal') || f.includes('large-seal') || f.includes('-ls.') || f.includes('dazhuan')) return 'bigseal';
+  if (f.includes('shuowen') || f.includes('-sw.')    || f.includes('_sw.')  || f.includes('說文')) return 'shuowen';
+  if (f.includes('seal') || f.includes('zhuanshu')   || f.includes('篆'))   return 'seal';
+  if (f.includes('clerical') || f.includes('lishu')  || f.includes('隷'))   return 'clerical';
   return 'other';
 }
 
@@ -898,6 +913,7 @@ function buildFormsHTML(cards, kanji) {
            onerror="this.closest('.ancient-form-card').style.display='none'">
       <span class="ancient-script-tag ${c.meta.tag}">${c.meta.en}</span>
       <div class="ancient-form-script-jp">${c.meta.jp}</div>
+      <div class="ancient-form-period">${c.meta.period}</div>
     </div>
   `).join('');
 
