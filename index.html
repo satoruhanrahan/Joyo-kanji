@@ -742,13 +742,13 @@ function renderRadicalDetail(char, history) {
 // Ancient forms fetcher
 // Script type classification
 const SCRIPT_META = {
-  oracle:   { en: 'Oracle Bone',        jp: '甲骨文',  period: 'Shang dynasty, c. 1250–1050 BCE',           tag: 'tag-oracle' },
-  bronze:   { en: 'Bronze Script',      jp: '金文',    period: 'Zhou dynasty, c. 1050–221 BCE',              tag: 'tag-bronze' },
-  bigseal:  { en: 'Large Seal',         jp: '大篆',    period: 'W. Zhou – Spring & Autumn, c. 800–500 BCE',  tag: 'tag-seal'   },
-  shuowen:  { en: 'Shuowen Seal',       jp: '說文篆書', period: 'Han dynasty, compiled 100 CE',              tag: 'tag-seal'   },
-  seal:     { en: 'Seal Script',        jp: '篆書',    period: 'Qin–Han dynasty, c. 221 BCE–200 CE',         tag: 'tag-seal'   },
-  clerical: { en: 'Clerical Script',    jp: '隷書',    period: 'Han dynasty, c. 200 BCE–200 CE',             tag: 'tag-other'  },
-  other:    { en: 'Old Script',         jp: '古文字',  period: 'Ancient Chinese',                            tag: 'tag-other'  },
+  oracle:   { en: 'Oracle Bone',     jp: '甲骨文',   period: 'Shang dynasty, c. 1250–1050 BCE',          tag: 'tag-oracle', order: 1 },
+  bronze:   { en: 'Bronze Script',   jp: '金文',     period: 'Zhou dynasty, c. 1050–221 BCE',             tag: 'tag-bronze', order: 2 },
+  bigseal:  { en: 'Large Seal',      jp: '大篆',     period: 'W. Zhou – Spring & Autumn, c. 800–500 BCE', tag: 'tag-seal',   order: 3 },
+  seal:     { en: 'Seal Script',     jp: '篆書',     period: 'Qin–Han dynasty, c. 221 BCE–200 CE',        tag: 'tag-seal',   order: 4 },
+  shuowen:  { en: 'Shuowen Seal',    jp: '說文篆書', period: 'Han dynasty, compiled 100 CE',              tag: 'tag-seal',   order: 5 },
+  clerical: { en: 'Clerical Script', jp: '隷書',     period: 'Han dynasty, c. 200 BCE–200 CE',            tag: 'tag-other',  order: 6 },
+  other:    { en: 'Old Script',      jp: '古文字',   period: 'Ancient Chinese',                           tag: 'tag-other',  order: 7 },
 };
 
 function classifyScript(filename) {
@@ -907,7 +907,8 @@ function renderAncientFormsFromUrls(items, kanji, container) {
 
 function buildFormsHTML(cards, kanji) {
   const wikiUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(kanji)}#Han_character`;
-  const grid = cards.map(c => `
+  const sorted = [...cards].sort((a, b) => a.meta.order - b.meta.order);
+  const grid = sorted.map(c => `
     <div class="ancient-form-card">
       <img src="${c.src}" alt="${c.meta.en} form" loading="lazy"
            onerror="this.closest('.ancient-form-card').style.display='none'">
